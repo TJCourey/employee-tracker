@@ -28,7 +28,7 @@ const employeeQuestion = [
   {
     type: "input",
     name: "managerId",
-    message: "(Optional) Manager ID#:",
+    message: "(Optional: enter 'null' if ) Manager ID#:",
   },
 ];
 const removeEmployeeQ = [
@@ -140,35 +140,30 @@ const actionQuestion = [
     choices: ["View", "Add", "Remove", "Go Back"],
   },
 ];
-const viewTable = (loc) => {
+viewTable = (loc) => {
   //   console.log("Selecting all employees...\n");
   connection.query(`SELECT * FROM ${loc}`, (err, res) => {
     if (err) throw err;
     // Log all results of the SELECT statement
     console.table(res);
+    initialQuestion();
   });
 };
-
-const addEmployee = () => {
+addEmployee = () => {
   inquirer.prompt(employeeQuestion).then((data) => {
     console.log("Inserting a new employee...\n");
     connection.query(
-      "INSERT INTO employee SET ?",
-      {
-        first_name: data.firstName,
-        lastName: data.lastName,
-        role_id: data.roleId,
-        manager_id: data.managerId,
-      },
+      `INSERT INTO employee (first_name, last_name, role_id, manager_id)
+      VALUES ("${data.firstName}", "${data.lastName}",${data.roleId} , ${data.managerId})`,
       (err, res) => {
         if (err) throw err;
         console.log(`${res.affectedRows} Employee added\n`);
+        employeeActionQ();
       }
     );
-    employeeActionQ();
   });
 };
-const removeEmployee = () => {
+removeEmployee = () => {
   inquirer.prompt(removeEmployeeQ).then((data) => {
     switch (data.confirm) {
       case "DELETE": {
@@ -181,17 +176,18 @@ const removeEmployee = () => {
           (err, res) => {
             if (err) throw err;
             console.log(`${res.affectedRows} employee deleted!\n`);
+            employeeActionQ();
           }
         );
-        employeeActionQ();
+        break;
       }
       default: {
-        employeeAction();
+        employeeActionQ();
       }
     }
   });
 };
-const editRole = () => {
+editRole = () => {
   inquirer.prompt(editRoleQ).then((data) => {
     console.log("Updating all Rocky Road quantities...\n");
     connection.query(
@@ -208,12 +204,12 @@ const editRole = () => {
       (err, res) => {
         if (err) throw err;
         console.log(`${res.affectedRows} role updated!\n`);
+        employeeActionQ();
       }
     );
-    employeeActionQ();
   });
 };
-const addRole = () => {
+addRole = () => {
   inquirer.prompt(roleQuestion).then((data) => {
     console.log("Inserting a new role...\n");
     connection.query(
@@ -226,12 +222,12 @@ const addRole = () => {
       (err, res) => {
         if (err) throw err;
         console.log(`${res.affectedRows} Role added\n`);
+        roleActionQ();
       }
     );
-    roleActionQ();
   });
 };
-const removeRole = () => {
+removeRole = () => {
   inquirer.prompt(removeRoleQ).then((data) => {
     switch (data.confirm) {
       case "DELETE": {
@@ -244,9 +240,9 @@ const removeRole = () => {
           (err, res) => {
             if (err) throw err;
             console.log(`${res.affectedRows} role deleted!\n`);
+            roleActionQ();
           }
         );
-        roleActionQ();
       }
       default: {
         roleActionQ();
@@ -254,7 +250,7 @@ const removeRole = () => {
     }
   });
 };
-const addDepartment = () => {
+addDepartment = () => {
   inquirer.prompt(departmentQuestion).then((data) => {
     console.log("Inserting a new department...\n");
     connection.query(
@@ -270,7 +266,7 @@ const addDepartment = () => {
     departmentActionQ();
   });
 };
-const removeDepartment = () => {
+removeDepartment = () => {
   inquirer.prompt(removeDepartmentQ).then((data) => {
     switch (data.confirm) {
       case "DELETE": {
@@ -293,11 +289,10 @@ const removeDepartment = () => {
     }
   });
 };
-
 employeeActionQ = () => {
-  console.table(viewTable("employee"));
+  // console.table(viewTable("employee"));
   inquirer.prompt(empActionQuestion).then((data) => {
-    switch (data.nav) {
+    switch (data.action) {
       case "View": {
         viewTable("employee");
         break;
@@ -314,16 +309,18 @@ employeeActionQ = () => {
         editRole();
         break;
       }
-      case "Go back": {
+      case "Go Back": {
         initialQuestion();
+      }
+      default: {
+        console.log("employee action prompt error");
       }
     }
   });
 };
 roleActionQ = () => {
-  console.table(viewTable("role"));
   inquirer.prompt(actionQuestion).then((data) => {
-    switch (data.nav) {
+    switch (data.action) {
       case "View": {
         viewTable("role");
         break;
@@ -343,9 +340,8 @@ roleActionQ = () => {
   });
 };
 departmentActionQ = () => {
-  console.table(viewTable("department"));
   inquirer.prompt(actionQuestion).then((data) => {
-    switch (data.nav) {
+    switch (data.action) {
       case "View": {
         viewTable("department");
         break;
@@ -358,7 +354,7 @@ departmentActionQ = () => {
         removeDepartment();
         break;
       }
-      case "Go back": {
+      case "Go Back": {
         initialQuestion();
       }
     }
@@ -389,5 +385,5 @@ initialQuestion = () => {
 connection.connect((err) => {
   if (err) throw err;
   console.log(`connected as id ${connection.threadId}\n`);
-  viewTable("");
+  initialQuestion();
 });
