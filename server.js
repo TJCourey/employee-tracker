@@ -31,6 +31,41 @@ const employeeQuestion = [
     message: "(Optional) Manager ID#:",
   },
 ];
+const removeEmployeeQ = [
+  {
+    type: "input",
+    name: "firstName",
+    message: "First Name:",
+  },
+  {
+    type: "input",
+    name: "lastName",
+    message: "Last Name:",
+  },
+  {
+    type: "input",
+    name: "confirm",
+    message:
+      "Type DELETE to verify that you want to permanently remove this employee, note this can not be undone:",
+  },
+];
+const editRoleQ = [
+  {
+    type: "input",
+    name: "firstName",
+    message: "First Name:",
+  },
+  {
+    type: "input",
+    name: "lastName",
+    message: "Last Name:",
+  },
+  {
+    type: "input",
+    name: "newRole",
+    message: "Please enter the new role ID#",
+  },
+];
 const roleQuestion = [
   {
     type: "input",
@@ -48,11 +83,37 @@ const roleQuestion = [
     message: "Department ID#:",
   },
 ];
+const removeRoleQ = [
+  {
+    type: "input",
+    name: "title",
+    message: "Role Name:",
+  },
+  {
+    type: "input",
+    name: "confirm",
+    message:
+      "Type DELETE to verify that you want to permanently remove this role, note this can not be undone:",
+  },
+];
 const departmentQuestion = [
   {
     type: "input",
     name: "department",
     message: "Department Name:",
+  },
+];
+const removeDepartmentQ = [
+  {
+    type: "input",
+    name: "department",
+    message: "Department Name:",
+  },
+  {
+    type: "input",
+    name: "confirm",
+    message:
+      "Type DELETE to verify that you want to permanently remove this department, note this can not be undone:",
   },
 ];
 const navQuestion = [
@@ -104,6 +165,52 @@ const addEmployee = () => {
         console.log(`${res.affectedRows} Employee added\n`);
       }
     );
+    employeeActionQ();
+  });
+};
+const removeEmployee = () => {
+  inquirer.prompt(removeEmployeeQ).then((data) => {
+    switch (data.confirm) {
+      case "DELETE": {
+        console.log("Deleting employee...\n");
+        connection.query(
+          "DELETE FROM employee WHERE ?",
+          {
+            last_name: data.lastName,
+          },
+          (err, res) => {
+            if (err) throw err;
+            console.log(`${res.affectedRows} employee deleted!\n`);
+          }
+        );
+        employeeActionQ();
+      }
+      default: {
+        employeeAction();
+      }
+    }
+  });
+};
+const editRole = () => {
+  inquirer.prompt(editRoleQ).then((data) => {
+    console.log("Updating all Rocky Road quantities...\n");
+    connection.query(
+      "UPDATE employees SET ? WHERE ?",
+      [
+        {
+          role_id: data.newRole,
+        },
+        {
+          first_name: data.firstName,
+          last_name: data.lastName,
+        },
+      ],
+      (err, res) => {
+        if (err) throw err;
+        console.log(`${res.affectedRows} role updated!\n`);
+      }
+    );
+    employeeActionQ();
   });
 };
 const addRole = () => {
@@ -121,6 +228,30 @@ const addRole = () => {
         console.log(`${res.affectedRows} Role added\n`);
       }
     );
+    roleActionQ();
+  });
+};
+const removeRole = () => {
+  inquirer.prompt(removeRoleQ).then((data) => {
+    switch (data.confirm) {
+      case "DELETE": {
+        console.log("Deleting role...\n");
+        connection.query(
+          "DELETE FROM role WHERE ?",
+          {
+            title: data.title,
+          },
+          (err, res) => {
+            if (err) throw err;
+            console.log(`${res.affectedRows} role deleted!\n`);
+          }
+        );
+        roleActionQ();
+      }
+      default: {
+        roleActionQ();
+      }
+    }
   });
 };
 const addDepartment = () => {
@@ -136,34 +267,35 @@ const addDepartment = () => {
         console.log(`${res.affectedRows} Department added\n`);
       }
     );
+    departmentActionQ();
   });
 };
-const removeEmployee = (data) => {};
-
-initialQuestion = () => {
-  inquirer.prompt(navQuestion).then((data) => {
-    switch (data.nav) {
-      case "Employees": {
-        employeeActionQ();
-        break;
-      }
-      case "Roles": {
-        roleActionQ();
-        break;
-      }
-      case "Department": {
+const removeDepartment = () => {
+  inquirer.prompt(removeDepartmentQ).then((data) => {
+    switch (data.confirm) {
+      case "DELETE": {
+        console.log("Deleting department...\n");
+        connection.query(
+          "DELETE FROM department WHERE ?",
+          {
+            name: data.department,
+          },
+          (err, res) => {
+            if (err) throw err;
+            console.log(`${res.affectedRows} role deleted!\n`);
+          }
+        );
         departmentActionQ();
       }
-      case "Quit Program": {
-        console.log("Goodbye");
-        connection.end();
+      default: {
+        departmentActionQ();
       }
     }
   });
 };
 
 employeeActionQ = () => {
-  console.table(employeeView());
+  console.table(viewTable("employee"));
   inquirer.prompt(empActionQuestion).then((data) => {
     switch (data.nav) {
       case "View": {
@@ -184,6 +316,71 @@ employeeActionQ = () => {
       }
       case "Go back": {
         initialQuestion();
+      }
+    }
+  });
+};
+roleActionQ = () => {
+  console.table(viewTable("role"));
+  inquirer.prompt(actionQuestion).then((data) => {
+    switch (data.nav) {
+      case "View": {
+        viewTable("role");
+        break;
+      }
+      case "Add": {
+        addRole();
+        break;
+      }
+      case "Remove": {
+        removeRole();
+        break;
+      }
+      case "Go back": {
+        initialQuestion();
+      }
+    }
+  });
+};
+departmentActionQ = () => {
+  console.table(viewTable("department"));
+  inquirer.prompt(actionQuestion).then((data) => {
+    switch (data.nav) {
+      case "View": {
+        viewTable("department");
+        break;
+      }
+      case "Add": {
+        addDepartment();
+        break;
+      }
+      case "Remove": {
+        removeDepartment();
+        break;
+      }
+      case "Go back": {
+        initialQuestion();
+      }
+    }
+  });
+};
+initialQuestion = () => {
+  inquirer.prompt(navQuestion).then((data) => {
+    switch (data.nav) {
+      case "Employees": {
+        employeeActionQ();
+        break;
+      }
+      case "Roles": {
+        roleActionQ();
+        break;
+      }
+      case "Department": {
+        departmentActionQ();
+      }
+      case "Quit Program": {
+        console.log("Goodbye");
+        connection.end();
       }
     }
   });
