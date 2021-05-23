@@ -189,15 +189,17 @@ removeEmployee = () => {
 };
 editRole = () => {
   inquirer.prompt(editRoleQ).then((data) => {
-    console.log("Updating all Rocky Road quantities...\n");
+    console.log("Updating role...\n");
     connection.query(
-      "UPDATE employees SET ? WHERE ?",
+      "UPDATE employee SET ? WHERE ? AND ?",
       [
         {
           role_id: data.newRole,
         },
         {
           first_name: data.firstName,
+        },
+        {
           last_name: data.lastName,
         },
       ],
@@ -261,9 +263,9 @@ addDepartment = () => {
       (err, res) => {
         if (err) throw err;
         console.log(`${res.affectedRows} Department added\n`);
+        departmentActionQ();
       }
     );
-    departmentActionQ();
   });
 };
 removeDepartment = () => {
@@ -279,9 +281,9 @@ removeDepartment = () => {
           (err, res) => {
             if (err) throw err;
             console.log(`${res.affectedRows} role deleted!\n`);
+            departmentActionQ();
           }
         );
-        departmentActionQ();
       }
       default: {
         departmentActionQ();
@@ -373,6 +375,7 @@ initialQuestion = () => {
       }
       case "Department": {
         departmentActionQ();
+        break;
       }
       case "Quit Program": {
         console.log("Goodbye");
