@@ -140,7 +140,13 @@ const navQuestion = [
     type: "list",
     name: "nav",
     message: "Which area would you like access?",
-    choices: ["Employees", "Roles", "Department", "Quit Program"],
+    choices: [
+      "Employees",
+      "Roles",
+      "Department",
+      "View Main Table",
+      "Quit Program",
+    ],
   },
 ];
 const empActionQuestion = [
@@ -159,6 +165,17 @@ const actionQuestion = [
     choices: ["View", "Add", "Remove", "Go Back"],
   },
 ];
+viewMainTable = () => {
+  connection.query(
+    `SELECT first_name, last_name, title, salary, name FROM employee LEFT JOIN role ON employee.role_id = role.id LEFT JOIN department ON role.department_id = department.id`,
+    (err, res) => {
+      if (err) throw err;
+      // Log all results of the SELECT statement
+      console.table(res);
+      initialQuestion();
+    }
+  );
+};
 viewTable = (loc) => {
   //   console.log("Selecting all employees...\n");
   connection.query(`SELECT * FROM ${loc}`, (err, res) => {
@@ -230,53 +247,53 @@ editRole = () => {
     );
   });
 };
-editRole = () => {
-  inquirer
-    .prompt(
-      {
-        type: "input",
-        name: "firstName",
-        message: "First Name:",
-      },
-      {
-        type: "input",
-        name: "lastName",
-        message: "Last Name:",
-      },
-      {
-        type: "list",
-        name: "newRole",
-        message: "Please enter the new role",
-        choices: connection.query(`SELECT * FROM role`, (err, res) => {
-          if (err) throw err;
-          // Log all results of the SELECT statement
-          console.table(res);
-        }),
-      }
-    )
-    .then((data) => {
-      console.log("Updating role...\n");
-      connection.query(
-        "UPDATE employee SET ? WHERE ? AND ?",
-        [
-          {
-            role_id: data.newRole,
-          },
-          {
-            first_name: data.firstName,
-          },
-          {
-            last_name: data.lastName,
-          },
-        ],
-        (err, res) => {
-          if (err) throw err;
-          console.log(`${res.affectedRows} role updated!\n`);
-          employeeActionQ();
-        }
-      );
-    });
-};
+// editRole = () => {
+//   inquirer
+//     .prompt(
+//       {
+//         type: "input",
+//         name: "firstName",
+//         message: "First Name:",
+//       },
+//       {
+//         type: "input",
+//         name: "lastName",
+//         message: "Last Name:",
+//       },
+//       {
+//         type: "list",
+//         name: "newRole",
+//         message: "Please enter the new role",
+//         choices: connection.query(`SELECT * FROM role`, (err, res) => {
+//           if (err) throw err;
+//           // Log all results of the SELECT statement
+//           console.table(res);
+//         }),
+//       }
+//     )
+//     .then((data) => {
+//       console.log("Updating role...\n");
+//       connection.query(
+//         "UPDATE employee SET ? WHERE ? AND ?",
+//         [
+//           {
+//             role_id: data.newRole,
+//           },
+//           {
+//             first_name: data.firstName,
+//           },
+//           {
+//             last_name: data.lastName,
+//           },
+//         ],
+//         (err, res) => {
+//           if (err) throw err;
+//           console.log(`${res.affectedRows} role updated!\n`);
+//           employeeActionQ();
+//         }
+//       );
+//     });
+// };
 addRole = () => {
   inquirer.prompt(roleQuestion).then((data) => {
     console.log("Inserting a new role...\n");
@@ -443,6 +460,10 @@ initialQuestion = () => {
         departmentActionQ();
         break;
       }
+      case "View Main Table": {
+        viewMainTable();
+        break;
+      }
       case "Quit Program": {
         console.log("Goodbye");
         connection.end();
@@ -454,5 +475,5 @@ initialQuestion = () => {
 connection.connect((err) => {
   if (err) throw err;
   console.log(`connected as id ${connection.threadId}\n`);
-  initialQuestion();
+  viewMainTable();
 });

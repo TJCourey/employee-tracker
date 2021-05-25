@@ -18,7 +18,8 @@ Copy all files to your hard drive and run "npm i" from the command line of your 
 ## Usage
 
 Below is a link to a short video demonstrating functionality:
-`md ![alt text](assets/images/screenshot.png) `
+
+- https://drive.google.com/file/d/1IObMDRaj9Tzbk_HLdYPcuyYuDoGX-tOZ/view
 
 ## Credits
 
