@@ -24,6 +24,25 @@ const employeeQuestion = [
     type: "input",
     name: "roleId",
     message: "Role ID#:",
+    // type: "list",
+    // name: "roleId",
+    // message: "Select role?",
+    // choices() {
+    // const choices = [],
+    // res.forEach(({ title }) => {
+    // choices.push(title)
+    // })
+    // return choices
+    // }
+    //  .then(response => {
+    //  connection.query(`SELECT id FROM role WHERE title=?`, response.role, (err, data) =>{
+    //  if(err){ throw err
+    //  } else {
+    //
+    //}
+    //
+    //  })
+    //  })
   },
   {
     type: "input",
@@ -211,6 +230,53 @@ editRole = () => {
     );
   });
 };
+editRole = () => {
+  inquirer
+    .prompt(
+      {
+        type: "input",
+        name: "firstName",
+        message: "First Name:",
+      },
+      {
+        type: "input",
+        name: "lastName",
+        message: "Last Name:",
+      },
+      {
+        type: "list",
+        name: "newRole",
+        message: "Please enter the new role",
+        choices: connection.query(`SELECT * FROM role`, (err, res) => {
+          if (err) throw err;
+          // Log all results of the SELECT statement
+          console.table(res);
+        }),
+      }
+    )
+    .then((data) => {
+      console.log("Updating role...\n");
+      connection.query(
+        "UPDATE employee SET ? WHERE ? AND ?",
+        [
+          {
+            role_id: data.newRole,
+          },
+          {
+            first_name: data.firstName,
+          },
+          {
+            last_name: data.lastName,
+          },
+        ],
+        (err, res) => {
+          if (err) throw err;
+          console.log(`${res.affectedRows} role updated!\n`);
+          employeeActionQ();
+        }
+      );
+    });
+};
 addRole = () => {
   inquirer.prompt(roleQuestion).then((data) => {
     console.log("Inserting a new role...\n");
@@ -335,7 +401,7 @@ roleActionQ = () => {
         removeRole();
         break;
       }
-      case "Go back": {
+      case "Go Back": {
         initialQuestion();
       }
     }
